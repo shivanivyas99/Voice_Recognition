@@ -7,8 +7,9 @@ from pygame import mixer
 
 # Load the API key from an environment variable
 load_dotenv()
-#client = OpenAI.api_key (os.getenv("OPENAI_API_KEY"))
-client = OpenAI(api_key="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")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+#client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 
 
 # Define your ENABLE_LOGS and ENABLE_SPEECH_RESPONSES variables
