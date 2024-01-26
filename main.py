@@ -91,9 +91,9 @@ def communication():
 
     log("Record commands", True)
 
-    for i in range(2):  # Allowing 2 inputs
+    for i in range(20):  # Allowing 20 inputs
         with sr.Microphone() as source:
-            log(f"Start Speaking ({i+1} of 2):")
+            log(f"Start Speaking ({i+1} of 20):")
             audio = r.listen(source)
 
         try:
