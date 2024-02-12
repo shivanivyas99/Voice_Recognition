@@ -10,9 +10,7 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 #client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
-
-# Define your ENABLE_LOGS and ENABLE_SPEECH_RESPONSES variables
+# Defining ENABLE_LOGS and ENABLE_SPEECH_RESPONSES variables
 ENABLE_LOGS = True
 ENABLE_SPEECH_RESPONSES = True
 
@@ -45,19 +43,7 @@ def text_to_speech(input_text: str):
         print(f"Error in text to speech conversion: {e}")
 
 def log(value: str, read_aloud: bool = False):
-    """
-    Logs the input value.
-
-    Parameters:
-    value (str): The value to be logged.
-    read_aloud (bool, optional): If True, the value is also read aloud. Defaults to False.
-
-    Returns:
-    None
-
-    This function prints the input value if logging is enabled. 
-    If read_aloud is True, it also converts the value to speech.
-    """
+    
     if ENABLE_LOGS:
         print(value)
     if ENABLE_SPEECH_RESPONSES and read_aloud:
@@ -80,29 +66,38 @@ def request_current_status():
 recognized_texts = []
 
 def communication():
-    """
-    Captures and recognizes audio from the user using Google's speech recognition API.
-
-    This function allows multiple audio inputs from the user. It logs the start of each input and the result of the recognition. 
-    In case of an error, it logs the error and adds a default error message to the recognized texts.
-    """
+    
     global recognized_texts
     r = sr.Recognizer()
 
-    log("Record commands", True)
-
-    for i in range(2):  # Allowing 2 inputs
+    while True:  # Loop until the user confirms
         with sr.Microphone() as source:
-            log(f"Start Speaking ({i+1} of 2):")
+            log("Please start speaking...", True)
             audio = r.listen(source)
 
         try:
             text = r.recognize_google(audio)
-            recognized_texts.append(text)
-            log("Audio captured.", True)
+            log(f"Did you say: '{text}'?", True)
+
+            # Ask for confirmation using voice
+            log("Did I get that right? Please say yes or no.", True)
+            with sr.Microphone() as source:
+                confirmation_audio = r.listen(source)
+            confirmation_response = r.recognize_google(confirmation_audio).lower()
+
+            if "yes" in confirmation_response:
+                recognized_texts.append(text)
+                log("That is perfect, see you soon!", True)
+                break  # Exit loop if confirmed
+            elif "no" in confirmation_response:
+                log("Let's try again. Please speak again.", True)
+            else:
+                log("I didn't understand. Please say yes or no.", True)
+        except sr.UnknownValueError:
+            log("I didn't catch that. Let's try again.", True)
         except Exception as e:
-            log("Error: " + str(e))
-            recognized_texts.append("Error in recognizing audio.")
+            log(f"Error: {e}")
+
 
 def get_recognized_text():
     """
@@ -114,16 +109,13 @@ def get_recognized_text():
         return "No audio input was recognized."
 
 def display():
-    """
-    Asks the user if they want to see the recognized text.
-    """
-    view_text = input("Do you want to see the recognized text? (y/n): ")
-    if view_text.lower() == 'y':
-        log("Recognized text is given below:")
-        log(get_recognized_text())
+    
+    if recognized_texts:
+        for text in recognized_texts:
+            log(f"Recognized: {text}", True)
     else:
-        log("See you soon!", True)
-    log("Success!", True)
+        log("No audio input was recognized.", True)
+
 
 if __name__ == "__main__":
     init()
